@@ -1,36 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../models/weather_models.dart';
 import '../services/weather_service.dart';
-import '../models/weather_model.dart';
+import '../widgets/weather_info_item.dart';
+import '../widgets/past_day_card.dart';
 
-class WeatherScreen extends StatefulWidget {
-  const WeatherScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<WeatherScreen> createState() => _WeatherScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _WeatherScreenState extends State<WeatherScreen> {
-  final WeatherService _weatherService = WeatherService();
-  WeatherData? _weatherData;
+class _HomeScreenState extends State<HomeScreen> {
+  final _service = WeatherService();
+  WeatherData? _weather;
+  String? _error;
   bool _isLoading = true;
-  String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchWeather();
+    _fetchWeatherData();
   }
 
-  Future<void> _fetchWeather() async {
+  Future<void> _fetchWeatherData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
     try {
-      final data = await _weatherService.fetchWeather();
+      final data = await _service.fetchWeather();
       setState(() {
-        _weatherData = data;
+        _weather = data;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        _error = 'Failed to load weather data';
         _isLoading = false;
       });
     }
@@ -39,384 +47,365 @@ class _WeatherScreenState extends State<WeatherScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue[50],
-      appBar: AppBar(
-        title: const Text(
-          'Mumbai, India',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
+      backgroundColor: const Color(0xFF0C0B18), // Deep premium dark background
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF19182C),
+              Color(0xFF0F0E1E),
+              Color(0xFF0A0914),
+            ],
+            stops: [0.0, 0.5, 1.0],
           ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {},
+        child: SafeArea(
+          child: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.white))
+              : _error != null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _error!,
+                            style: GoogleFonts.inter(
+                                color: Colors.red, fontSize: 16),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _fetchWeatherData,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white24,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Try Again'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _buildContent(_weather!),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: _buildBody(),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (_errorMessage.isNotEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[300],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading weather',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _isLoading = true;
-                  _errorMessage = '';
-                });
-                _fetchWeather();
-              },
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_weatherData == null) {
-      return const Center(
-        child: Text('No weather data available'),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Main weather card
-          _buildMainWeatherCard(),
-          const SizedBox(height: 20),
-          // Weather details row
-          _buildWeatherDetails(),
-          const SizedBox(height: 20),
-          // Hourly forecast
-          _buildHourlyForecast(),
-        ],
       ),
     );
   }
 
-  Widget _buildMainWeatherCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.blue[400]!,
-            Colors.blue[200]!,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue[200]!.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Temperature
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '${_weatherData!.temperature.round()}°',
-                style: const TextStyle(
-                  fontSize: 72,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+  Widget _buildContent(WeatherData weather) {
+    return Stack(
+      children: [
+        // Glowing orange radial background behind the central weather image
+        Positioned(
+          top: 70,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFE58843).withOpacity(0.28),
+                    const Color(0xFFE58843).withOpacity(0.0),
+                  ],
+                  radius: 0.75,
                 ),
               ),
-              const SizedBox(width: 16),
-              Text(
-                _weatherData!.weatherIcon,
-                style: const TextStyle(fontSize: 48),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // Weather condition
-          Text(
-            _weatherData!.weatherCondition,
-            style: const TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 16),
-          // Precipitation info
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.water_drop,
-                color: Colors.white70,
-                size: 20,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '${_weatherData!.precipitation}%',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
+        ),
+
+        // Scrollable content area with padding at the bottom for the floating nav bar
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 90),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Custom Top Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildMenuIcon(),
+                            _buildLocationHeader(),
+                            Icon(
+                              Icons.calendar_month_outlined,
+                              color: Colors.white.withOpacity(0.9),
+                              size: 22,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Main Weather Illustration
+                        Center(
+                          child: Image.asset(
+                            weather.weatherImage,
+                            width: 160,
+                            height: 160,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Temperature Display
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${weather.temperature.round()}',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 68,
+                                fontWeight: FontWeight.w700,
+                                height: 1.0,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6, left: 2),
+                              child: Text(
+                                '°',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w300,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10, left: 4),
+                              child: Text(
+                                'c',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 38,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Weather Expectation/Condition
+                        Center(
+                          child: Text(
+                            weather.weatherCondition,
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+
+                        // Stats Row (Wind, Humidity, Daylight hours)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            WeatherInfoItem(
+                              icon: Icons.air_rounded,
+                              value: '${weather.windSpeed.round()}km/hr',
+                            ),
+                            WeatherInfoItem(
+                              icon: Icons.opacity_rounded,
+                              value: '${weather.humidity.round().toString().padLeft(2, '0')}%',
+                            ),
+                            WeatherInfoItem(
+                              icon: Icons.wb_sunny_outlined,
+                              value: '${weather.daylightHours.toStringAsFixed(1).replaceAll('.0', '')}hr',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Past Days Weather Header
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              color: Colors.white.withOpacity(0.9),
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Past Days Weather',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Responsive Past Days Cards Layout
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final availableWidth = constraints.maxWidth;
+                            final totalMargins = (weather.pastDays.length - 1) * 8; // margins
+                            final minRequiredWidth = (weather.pastDays.length * 90) + totalMargins;
+
+                            if (availableWidth > minRequiredWidth) {
+                              // Maximized/Wide Screen: stretch cards evenly
+                              return Row(
+                                children: weather.pastDays.map((p) {
+                                  return Expanded(
+                                    child: PastDayCard(
+                                      dayLabel: p.dateLabel,
+                                      temperature: '${p.maxTemp.round()}°',
+                                      imagePath: p.weatherImage,
+                                      width: null, // Let Expanded control the width
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            } else {
+                              // Narrow Screen: Horizontal scrolling list
+                              return SizedBox(
+                                height: 112,
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  children: weather.pastDays.map((p) {
+                                    return PastDayCard(
+                                      dayLabel: p.dateLabel,
+                                      temperature: '${p.maxTemp.round()}°',
+                                      imagePath: p.weatherImage,
+                                      width: 90, // Fixed width for scrollable view
+                                    );
+                                  }).toList(),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 20),
-              const Icon(
-                Icons.wind_power,
-                color: Colors.white70,
-                size: 20,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '${_weatherData!.windSpeed} km/hr',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(width: 20),
-              const Icon(
-                Icons.visibility,
-                color: Colors.white70,
-                size: 20,
-              ),
-              const SizedBox(width: 4),
-              const Text(
-                '02%',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            );
+          },
+        ),
+
+        // Floating Capsule Bottom Navigation Bar
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 12,
+          child: Container(
+            height: 62,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.watch_later,
-                  color: Colors.white70,
-                  size: 16,
-                ),
-                SizedBox(width: 4),
-                Text(
-                  '8hr',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(width: 16),
-                Icon(
-                  Icons.thermostat,
-                  color: Colors.white70,
-                  size: 16,
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'Feels like 28°',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+              color: const Color(0xFF1E203B).withOpacity(0.65),
+              borderRadius: BorderRadius.circular(31),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.08),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeatherDetails() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildDetailItem(
-            icon: Icons.thermostat,
-            label: 'Temperature',
-            value: '${_weatherData!.temperature.round()}°C',
-          ),
-          _buildDetailItem(
-            icon: Icons.water_drop,
-            label: 'Humidity',
-            value: '${_weatherData!.humidity.round()}%',
-          ),
-          _buildDetailItem(
-            icon: Icons.wind_power,
-            label: 'Wind Speed',
-            value: '${_weatherData!.windSpeed} km/h',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailItem({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: Colors.blue[400],
-          size: 28,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavButton(Icons.home_rounded, true),
+                _buildNavButton(Icons.search_rounded, false),
+                _buildNavButton(Icons.notifications_none_rounded, false),
+                _buildNavButton(Icons.map_outlined, false),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildHourlyForecast() {
-    final hourlyData = _weatherService.getHourlyForecast();
+  Widget _buildMenuIcon() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 22,
+          height: 2.5,
+          decoration: BoxDecoration(
+            color: const Color(0xFF38BDF8),
+            borderRadius: BorderRadius.circular(1.5),
+          ),
+        ),
+        const SizedBox(height: 5),
+        Container(
+          width: 14,
+          height: 2.5,
+          decoration: BoxDecoration(
+            color: const Color(0xFF38BDF8),
+            borderRadius: BorderRadius.circular(1.5),
+          ),
+        ),
+      ],
+    );
+  }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+  Widget _buildLocationHeader() {
+    return RichText(
+      text: TextSpan(
+        style: GoogleFonts.inter(
+          color: Colors.white,
+          fontSize: 16,
+        ),
+        children: [
+          const TextSpan(
+            text: 'Addis Ababa',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          TextSpan(
+            text: ', Ethiopia',
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: Colors.white.withOpacity(0.75),
+            ),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '⏱️ Hourly Forecast',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 80,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: hourlyData.length,
-              itemBuilder: (context, index) {
-                final item = hourlyData[index];
-                return Container(
-                  width: 70,
-                  margin: const EdgeInsets.only(right: 8),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        index == 0
-                            ? 'Now'
-                            : '${(item['time'] as DateTime).hour}pm',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${item['temperature']}°',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+    );
+  }
+
+  Widget _buildNavButton(IconData icon, bool isActive) {
+    return Container(
+      width: 44,
+      height: 44,
+      alignment: Alignment.center,
+      child: Icon(
+        icon,
+        color: isActive ? Colors.white : Colors.white.withOpacity(0.4),
+        size: 24,
       ),
     );
   }

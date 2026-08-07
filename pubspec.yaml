@@ -14,11 +14,16 @@ dependencies: # All packages your app needs to RUN
     sdk: flutter  # Flutter framework - REQUIRED
   http: ^1.1.0   # HTTP client for API calls - for fetching weather data
   intl: ^0.18.0  # Internationalization - for formatting dates/times nicely
+  google_fonts: ^6.1.0
 
 dev_dependencies: # Packages needed only during DEVELOPMENT
   flutter_test:
     sdk: flutter  # Testing framework - for writing tests
   flutter_lints: ^2.0.0 # Linting rules - helps you write better code
 
-flutter: # Flutter-specific configuration
-  uses-material-design: true # Enables Material Design icons
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/image/cloudy.png
+    - assets/image/heavy-rain.png
+    - assets/image/night.png
