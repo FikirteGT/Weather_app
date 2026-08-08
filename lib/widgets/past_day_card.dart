@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -43,14 +44,12 @@ class PastDayCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 6),
           Image.asset(
             imagePath,
             width: 32,
             height: 32,
             fit: BoxFit.contain,
           ),
-          const SizedBox(height: 6),
           Text(
             temperature,
             style: GoogleFonts.inter(

@@ -15,6 +15,7 @@ dependencies: # All packages your app needs to RUN
   http: ^1.1.0   # HTTP client for API calls - for fetching weather data
   intl: ^0.18.0  # Internationalization - for formatting dates/times nicely
   google_fonts: ^6.1.0
+  shared_preferences: ^2.2.0
 
 dev_dependencies: # Packages needed only during DEVELOPMENT
   flutter_test:
