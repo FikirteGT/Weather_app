@@ -39,6 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // Toggle for daily: Forecast vs History
   bool _showForecast = true;
 
+  // Hourly selection state
+  int? _selectedHourlyIndex;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +52,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // Helper method to get weather condition string from weather code
+  String _getWeatherConditionFromCode(int code) {
+    if (code == 0) return 'Clear sky';
+    if (code <= 3) return 'Partly cloudy';
+    if (code <= 48) return 'Foggy';
+    if (code <= 67) return 'Rainy';
+    if (code <= 77) return 'Snow fall';
+    if (code <= 82) return 'Rain showers';
+    return 'Thunderstorm';
   }
 
   // Load last searched location, then pull weather
@@ -72,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isLoading = true;
       _error = null;
+      _selectedHourlyIndex = null; // Reset hourly selection when new location is loaded
     });
 
     try {
@@ -408,14 +423,64 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 24),
 
-                          // Main Weather Illustration
-                          Center(
-                            child: Image.asset(
-                              weather.weatherImage,
-                              width: 160,
-                              height: 160,
-                              fit: BoxFit.contain,
-                            ),
+                          // Main Weather Illustration & Selected Hour Indicator
+                          Column(
+                            children: [
+                              if (_selectedHourlyIndex != null) ...[
+                                Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: theme.accentColor.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: theme.accentColor.withOpacity(0.4),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.access_time_filled_rounded,
+                                          color: theme.accentColor,
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Hourly View: ${DateFormat('HH:mm').format(weather.hourlyForecast[_selectedHourlyIndex!].time)}',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        GestureDetector(
+                                          onTap: () => setState(() => _selectedHourlyIndex = null),
+                                          child: Icon(
+                                            Icons.cancel_rounded,
+                                            color: Colors.white.withOpacity(0.6),
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                              Center(
+                                child: Image.asset(
+                                  _selectedHourlyIndex != null
+                                      ? weather.hourlyForecast[_selectedHourlyIndex!].weatherImage
+                                      : weather.weatherImage,
+                                  width: 160,
+                                  height: 160,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 18),
 
@@ -425,7 +490,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${weather.temperature.round()}',
+                                '${(_selectedHourlyIndex != null ? weather.hourlyForecast[_selectedHourlyIndex!].temperature : weather.temperature).round()}',
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 68,
@@ -464,7 +529,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           // Weather Expectation/Condition
                           Center(
                             child: Text(
-                              weather.weatherCondition,
+                              _selectedHourlyIndex != null
+                                  ? _getWeatherConditionFromCode(weather.hourlyForecast[_selectedHourlyIndex!].weatherCode)
+                                  : weather.weatherCondition,
                               style: GoogleFonts.inter(
                                 color: Colors.white.withOpacity(0.85),
                                 fontSize: 15,
@@ -511,6 +578,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   temperature: hour.temperature,
                                   imagePath: hour.weatherImage,
                                   isCurrent: index == 0,
+                                  isSelected: _selectedHourlyIndex == index,
+                                  onTap: () => setState(() => _selectedHourlyIndex = index),
                                 );
                               },
                             ),
