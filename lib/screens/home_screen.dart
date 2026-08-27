@@ -175,6 +175,140 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Display a 7-day calendar forecast list view dialog
+  void _showDetailedCalendarForecast() {
+    if (_weather == null) return;
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: AlertDialog(
+            backgroundColor: const Color(0xFF1B1C33).withOpacity(0.95),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_month_rounded, color: Color(0xFF38BDF8), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      '7-Day Calendar Forecast',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+                  ),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const BouncingScrollPhysics(),
+                itemCount: _weather!.dailyForecast.length,
+                separatorBuilder: (context, index) => Divider(
+                  color: Colors.white.withOpacity(0.05),
+                  height: 1,
+                ),
+                itemBuilder: (context, index) {
+                  final day = _weather!.dailyForecast[index];
+                  final isToday = index == 0;
+                  
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context); // Close calendar first
+                      _showDaySummaryDialog(day); // Show details
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  day.dateLabel,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
+                                  ),
+                                ),
+                                if (isToday)
+                                  Text(
+                                    'Today',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF38BDF8),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Image.asset(
+                              day.weatherImage,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              '${day.minTemp.round()}° / ${day.maxTemp.round()}°',
+                              textAlign: TextAlign.end,
+                              style: GoogleFonts.inter(
+                                color: Colors.white70,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.white30,
+                            size: 18,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // Load last searched location, then pull weather
   Future<void> _loadLocationAndFetch() async {
     try {
@@ -522,7 +656,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               _buildLocationHeader(),
                               GestureDetector(
-                                onTap: _showNotificationAlerts,
+                                onTap: _showDetailedCalendarForecast,
                                 child: Icon(
                                   Icons.calendar_month_outlined,
                                   color: Colors.white.withOpacity(0.9),
