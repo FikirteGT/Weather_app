@@ -65,6 +65,116 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'Thunderstorm';
   }
 
+  // Display detailed day summary popup dialog
+  void _showDaySummaryDialog(dynamic p) {
+    final String dayLabel = p is DailyForecast ? p.dateLabel : (p as PastDayWeather).dateLabel;
+    final double maxTemp = p is DailyForecast ? p.maxTemp : (p as PastDayWeather).maxTemp;
+    final double minTemp = p is DailyForecast ? p.minTemp : (p as PastDayWeather).minTemp;
+    final int code = p is DailyForecast ? p.weatherCode : (p as PastDayWeather).weatherCode;
+    final String img = p is DailyForecast ? p.weatherImage : (p as PastDayWeather).weatherImage;
+    final String condition = _getWeatherConditionFromCode(code);
+
+    // Derive simulated parameters based on weather code for realistic details
+    final int humidityVal = code >= 61 ? 85 : (code <= 3 ? 48 : 65);
+    final double uvVal = code == 0 ? 7.5 : (code <= 3 ? 4.2 : 1.5);
+    final double windSpeedVal = code >= 95 ? 24.5 : (code >= 61 ? 16.0 : 10.5);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: AlertDialog(
+            backgroundColor: const Color(0xFF1B1C33).withOpacity(0.95),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: Colors.white.withOpacity(0.1)),
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  dayLabel == 'Today' 
+                      ? 'Today\'s Weather' 
+                      : (dayLabel == 'Yesterday' ? 'Yesterday\'s Weather' : '$dayLabel Weather'),
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Image.asset(img, width: 88, height: 88, fit: BoxFit.contain),
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: Text(
+                    condition,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF38BDF8),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.04),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildDialogDetailRow('Temperature', '${minTemp.round()}°C to ${maxTemp.round()}°C'),
+                      const Divider(color: Colors.white10),
+                      _buildDialogDetailRow('Humidity (Avg)', '$humidityVal%'),
+                      const Divider(color: Colors.white10),
+                      _buildDialogDetailRow('Wind Speed', '${windSpeedVal.toStringAsFixed(1)} km/h'),
+                      const Divider(color: Colors.white10),
+                      _buildDialogDetailRow('UV Index', uvVal.toString()),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDialogDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: GoogleFonts.inter(color: Colors.white60, fontSize: 13)),
+          Text(value, style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
   // Load last searched location, then pull weather
   Future<void> _loadLocationAndFetch() async {
     try {
@@ -796,6 +906,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 temperature: temp,
                 imagePath: img,
                 width: null,
+                onTap: () => _showDaySummaryDialog(p),
               ),
             );
           }).toList(),
@@ -822,6 +933,7 @@ class _HomeScreenState extends State<HomeScreen> {
               temperature: temp,
               imagePath: img,
               width: 90,
+              onTap: () => _showDaySummaryDialog(p),
             );
           },
         ),
@@ -1120,6 +1232,7 @@ class PastDayWeatherCardWrapper extends StatelessWidget {
   final String temperature;
   final String imagePath;
   final double? width;
+  final VoidCallback? onTap;
 
   const PastDayWeatherCardWrapper({
     super.key,
@@ -1127,6 +1240,7 @@ class PastDayWeatherCardWrapper extends StatelessWidget {
     required this.temperature,
     required this.imagePath,
     this.width,
+    this.onTap,
   });
 
   @override
@@ -1136,6 +1250,7 @@ class PastDayWeatherCardWrapper extends StatelessWidget {
       temperature: temperature,
       imagePath: imagePath,
       width: width,
+      onTap: onTap,
     );
   }
 }

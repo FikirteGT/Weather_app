@@ -7,6 +7,7 @@ class PastDayCard extends StatelessWidget {
   final String temperature;
   final String imagePath;
   final double? width;
+  final VoidCallback? onTap;
 
   const PastDayCard({
     super.key,
@@ -14,51 +15,55 @@ class PastDayCard extends StatelessWidget {
     required this.temperature,
     required this.imagePath,
     this.width,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1B1C33).withOpacity(0.55),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.08),
-          width: 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: width,
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1B1C33).withOpacity(0.55),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.08),
+            width: 1,
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            dayLabel,
-            style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              dayLabel,
+              style: GoogleFonts.inter(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Image.asset(
-            imagePath,
-            width: 32,
-            height: 32,
-            fit: BoxFit.contain,
-          ),
-          Text(
-            temperature,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
+            Image.asset(
+              imagePath,
+              width: 32,
+              height: 32,
+              fit: BoxFit.contain,
             ),
-          ),
-        ],
+            Text(
+              temperature,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
