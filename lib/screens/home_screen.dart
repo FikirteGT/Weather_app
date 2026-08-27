@@ -1,4 +1,5 @@
 // ignore_for_file: deprecated_member_use
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -434,14 +435,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // 3. Air Quality Alert
-    if (_weather!.usAqi > 100) {
+    if (_weather!.usAqi != null && _weather!.usAqi! > 100) {
       activeAlerts.add({
         'icon': Icons.warning_amber_rounded,
         'color': Colors.orangeAccent,
         'title': 'Poor Air Quality Alert',
         'desc': 'Air Quality Index is unhealthy (${_weather!.usAqi}). Sensitive groups should limit outdoor activities.',
       });
-    } else if (_weather!.usAqi > 50) {
+    } else if (_weather!.usAqi != null && _weather!.usAqi! > 50) {
       activeAlerts.add({
         'icon': Icons.info_outline_rounded,
         'color': Colors.amber,
@@ -1878,8 +1879,8 @@ class RadarMapPainter extends CustomPainter {
         ..strokeWidth = 2.0;
 
       final sweepEnd = Offset(
-        center.dx + radius * (sweepAngle).cos(),
-        center.dy + radius * (sweepAngle).sin(),
+        center.dx + radius * cos(sweepAngle),
+        center.dy + radius * sin(sweepAngle),
       );
       canvas.drawLine(center, sweepEnd, sweepPaint);
 
