@@ -592,69 +592,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Display a popup dialog for the Map option
-  void _showRadarMapComingSoon() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: AlertDialog(
-            backgroundColor: const Color(0xFF1B1C33).withOpacity(0.9),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: Colors.white.withOpacity(0.1)),
-            ),
-            title: Row(
-              children: [
-                const Icon(Icons.map_outlined, color: Color(0xFF38BDF8)),
-                const SizedBox(width: 10),
-                Text(
-                  'Interactive Radar Map',
-                  style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  height: 120,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: const RadialGradient(
-                      colors: [Color(0x3338BDF8), Color(0x0038BDF8)],
-                      radius: 0.8,
-                    ),
-                    border: Border.all(color: Colors.white.withOpacity(0.05)),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.radar_rounded, color: Color(0xFF38BDF8), size: 48),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Precipitation radar overlays and interactive regional maps are simulated for $_cityName. Check back in the next release!',
-                  style: GoogleFonts.inter(color: Colors.white70, height: 1.4),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Got it',
-                  style: GoogleFonts.inter(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold),
-                ),
-              )
-            ],
-          ),
-        );
-      },
-    );
-  }
+
 
   // Display the live interactive animated radar map dialog
   void _showRadarMap() {
@@ -1668,6 +1606,7 @@ class _RadarMapDialogContentState extends State<RadarMapDialogContent> with Sing
                           mode: _radarMode,
                           animationVal: _controller.value,
                           isPlaying: _isPlaying,
+                          zoomLevel: _zoomLevel,
                         ),
                       );
                     },
@@ -1815,11 +1754,13 @@ class RadarMapPainter extends CustomPainter {
   final String mode; // 'rain', 'temp', 'wind'
   final double animationVal; // Value from 0.0 to 1.0 (controlling the radar sweep or particle positions)
   final bool isPlaying;
+  final double zoomLevel;
 
   RadarMapPainter({
     required this.mode,
     required this.animationVal,
     required this.isPlaying,
+    required this.zoomLevel,
   });
 
   @override
@@ -1827,13 +1768,18 @@ class RadarMapPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.scale(zoomLevel);
+    canvas.translate(-center.dx, -center.dy);
+
     // 1. Draw grid background
     final gridPaint = Paint()
       ..color = Colors.white.withOpacity(0.04)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    final int gridCount = 6;
+    const int gridCount = 6;
     for (int i = 1; i <= gridCount; i++) {
       canvas.drawCircle(center, radius * (i / gridCount), gridPaint);
     }
@@ -1969,6 +1915,7 @@ class RadarMapPainter extends CustomPainter {
         canvas.drawPath(path2, windPaint);
       }
     }
+    canvas.restore();
   }
 
   @override
