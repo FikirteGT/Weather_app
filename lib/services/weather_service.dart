@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/weather_models.dart';
@@ -71,17 +72,17 @@ class WeatherService {
         
         return results.map((item) {
           return {
-            'name': item['name'] as String,
-            'country': item['country'] as String? ?? '',
-            'admin1': item['admin1'] as String? ?? '', // Region/State
-            'latitude': (item['latitude'] as num).toDouble(),
-            'longitude': (item['longitude'] as num).toDouble(),
+            'name': item['name']?.toString() ?? 'Unknown',
+            'country': item['country']?.toString() ?? '',
+            'admin1': item['admin1']?.toString() ?? '', // Region/State
+            'latitude': (item['latitude'] as num?)?.toDouble() ?? 0.0,
+            'longitude': (item['longitude'] as num?)?.toDouble() ?? 0.0,
           };
         }).toList();
       }
     } catch (e) {
       // Log or suppress geocoding errors
-      print('Geocoding error: $e');
+      debugPrint('Geocoding error: $e');
     }
     return [];
   }
@@ -94,7 +95,7 @@ class WeatherService {
       await prefs.setString(_weatherCacheKey, jsonEncode(weatherJson));
       await prefs.setString(_lastUpdatedCacheKey, DateTime.now().toIso8601String());
     } catch (e) {
-      print('Failed to cache weather data: $e');
+      debugPrint('Failed to cache weather data: $e');
     }
   }
 
@@ -106,7 +107,7 @@ class WeatherService {
         return jsonDecode(cachedStr) as Map<String, dynamic>;
       }
     } catch (e) {
-      print('Failed to load cached weather data: $e');
+      debugPrint('Failed to load cached weather data: $e');
     }
     return null;
   }
@@ -125,7 +126,7 @@ class WeatherService {
       await prefs.setDouble(_latCacheKey, lat);
       await prefs.setDouble(_lonCacheKey, lon);
     } catch (e) {
-      print('Failed to cache selected city: $e');
+      debugPrint('Failed to cache selected city: $e');
     }
   }
 
@@ -147,7 +148,7 @@ class WeatherService {
         };
       }
     } catch (e) {
-      print('Failed to load cached selected city: $e');
+      debugPrint('Failed to load cached selected city: $e');
     }
     
     // Default fallback: Addis Ababa, Ethiopia
