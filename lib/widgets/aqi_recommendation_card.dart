@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -40,9 +42,9 @@ class AqiRecommendationCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.air_rounded,
-                    color: const Color(0xFF38BDF8),
+                    color: Color(0xFF38BDF8),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
