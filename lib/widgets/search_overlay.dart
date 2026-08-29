@@ -138,29 +138,32 @@ class SearchOverlayWidget extends StatelessWidget {
                                 if (city['country'].toString().isNotEmpty) city['country'],
                               ].join(', ');
 
-                              return ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                title: Text(
-                                  title,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
+                              return Material(
+                                color: Colors.transparent,
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  title: Text(
+                                    title,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  subtitle,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white.withOpacity(0.5),
-                                    fontSize: 12,
+                                  subtitle: Text(
+                                    subtitle,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white.withOpacity(0.5),
+                                      fontSize: 12,
+                                    ),
                                   ),
+                                  trailing: const Icon(
+                                    Icons.location_on_outlined,
+                                    color: Color(0xFF38BDF8),
+                                    size: 20,
+                                  ),
+                                  onTap: () => onCitySelected(city),
                                 ),
-                                trailing: const Icon(
-                                  Icons.location_on_outlined,
-                                  color: Color(0xFF38BDF8),
-                                  size: 20,
-                                ),
-                                onTap: () => onCitySelected(city),
                               );
                             },
                           ),
