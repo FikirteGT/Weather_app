@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   WeatherModel? _weatherData;
   String? _errorMessage;
   bool _isLoading = true;
+  bool _isOfflineDemo = false;
 
   // Selected bottom navigation index
   int _currentNavIndex = 0;
@@ -43,6 +44,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _isOfflineDemo = false;
     });
 
     try {
@@ -52,11 +54,22 @@ class _HomePageState extends State<HomePage> {
         _isLoading = false;
       });
     } catch (e) {
+      debugPrint('Error loading weather: $e');
       setState(() {
-        _errorMessage = 'Unable to load weather data. Please check your internet connection.';
+        _errorMessage = 'Unable to connect to weather API ($e). Check your internet connection or browser CORS settings.';
         _isLoading = false;
       });
     }
+  }
+
+  /// Fallback loader for offline / restricted network environments.
+  void _loadOfflineDemoData() {
+    setState(() {
+      _weatherData = WeatherService.getFallbackWeather();
+      _errorMessage = null;
+      _isLoading = false;
+      _isOfflineDemo = true;
+    });
   }
 
   @override
@@ -110,11 +123,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Error State UI with Retry Button
+  /// Error State UI with Retry & Demo Mode Buttons
   Widget _buildErrorState() {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -133,28 +146,48 @@ class _HomePageState extends State<HomePage> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               _errorMessage!,
               style: GoogleFonts.inter(
                 color: Colors.white60,
-                fontSize: 14,
+                fontSize: 13,
+                height: 1.4,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadWeather,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            const SizedBox(height: 28),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _loadWeather,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('Try Again'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF38BDF8),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: _loadOfflineDemoData,
+                  icon: const Icon(Icons.offline_bolt_outlined, size: 18),
+                  label: const Text('Offline Demo'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white30),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -173,6 +206,29 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (_isOfflineDemo)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.withOpacity(0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.wifi_off_rounded, color: Colors.amber, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Offline Demo Mode Active. Pull down to refresh live API.',
+                        style: GoogleFonts.inter(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             // Top Section: City Name, Weather Icon, Temperature & Mood
             WeatherHeader(weather: weather, locationName: 'Addis Ababa'),
             const SizedBox(height: 24),
