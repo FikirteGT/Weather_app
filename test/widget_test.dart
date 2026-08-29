@@ -3,10 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:weather_app/main.dart';
 
 void main() {
-  testWidgets('WeatherApp smoke test - starts and shows loading or screen',
+  testWidgets('WeatherCompanionApp smoke test - starts and shows loading or screen',
       (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const WeatherApp());
+    await tester.pumpWidget(const WeatherCompanionApp());
 
     // Initially, it should show a loading indicator or attempt to fetch weather.
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
