@@ -11,10 +11,12 @@ import '../widgets/weather_advice_card.dart';
 import '../widgets/outfit_card.dart';
 import '../widgets/activity_score_card.dart';
 import '../widgets/hourly_forecast.dart';
+import '../widgets/search_overlay.dart';
+import '../widgets/favorites_dialog.dart';
 
 /// HomePage is the main screen of the "Weather Companion" application.
 /// It coordinates fetching live data, managing loading/error states,
-/// and building the weather-responsive UI dashboard.
+/// searching locations, managing favorites, and building the dashboard.
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -30,16 +32,40 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
   bool _isOfflineDemo = false;
 
-  // Selected bottom navigation index
+  // Selected Location State
+  FavoriteCity _currentCity = const FavoriteCity(
+    name: 'Addis Ababa',
+    country: 'Ethiopia',
+    latitude: 8.9806,
+    longitude: 38.7578,
+  );
+
+  // Favorites List
+  late List<FavoriteCity> _favoriteCities;
+
+  // Search UI State
+  bool _isSearching = false;
+  bool _isSearchingLoading = false;
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _searchResults = [];
+
+  // Navigation Index (0 = Home, 1 = Search, 2 = Favorites)
   int _currentNavIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    _favoriteCities = List.from(defaultFavoriteCities);
     _loadWeather();
   }
 
-  /// Asynchronously loads live weather data using WeatherService.
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// Asynchronously loads live weather data for the current city using WeatherService.
   Future<void> _loadWeather() async {
     setState(() {
       _isLoading = true;
@@ -48,7 +74,10 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      final data = await _weatherService.fetchCurrentWeather();
+      final data = await _weatherService.fetchCurrentWeather(
+        latitude: _currentCity.latitude,
+        longitude: _currentCity.longitude,
+      );
       setState(() {
         _weatherData = data;
         _isLoading = false;
@@ -72,6 +101,66 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  /// Auto-complete location geocoding lookup
+  void _onSearchChanged(String query) async {
+    if (query.trim().length < 2) {
+      setState(() {
+        _searchResults = [];
+        _isSearchingLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearchingLoading = true;
+    });
+
+    try {
+      final results = await _weatherService.fetchLocations(query);
+      if (mounted && _searchController.text == query) {
+        setState(() {
+          _searchResults = results;
+          _isSearchingLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSearchingLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Handles selecting a city from Search results or Favorites list
+  void _selectCity(FavoriteCity city) {
+    setState(() {
+      _currentCity = city;
+      _isSearching = false;
+      _searchController.clear();
+      _searchResults = [];
+      _currentNavIndex = 0; // Return to Home dashboard view
+    });
+    _loadWeather();
+  }
+
+  /// Toggles whether the current city is saved in Favorites
+  void _toggleFavoriteCurrentCity() {
+    final bool isFav = _favoriteCities.any(
+      (c) => c.name.toLowerCase() == _currentCity.name.toLowerCase(),
+    );
+
+    setState(() {
+      if (isFav) {
+        _favoriteCities.removeWhere(
+          (c) => c.name.toLowerCase() == _currentCity.name.toLowerCase(),
+        );
+      } else {
+        _favoriteCities.add(_currentCity);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeColors = WeatherUtils.getWeatherThemeGradients(_weatherData);
@@ -89,11 +178,60 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         child: SafeArea(
-          child: _isLoading
-              ? _buildLoadingState()
-              : _errorMessage != null
-                  ? _buildErrorState()
-                  : _buildWeatherDashboard(_weatherData!),
+          child: Stack(
+            children: [
+              // Main Content (Loading, Error, or Weather Dashboard)
+              _isLoading
+                  ? _buildLoadingState()
+                  : _errorMessage != null
+                      ? _buildErrorState()
+                      : _buildWeatherDashboard(_weatherData!),
+
+              // Full Screen Search Overlay (Active when Search Tab or Menu Icon is pressed)
+              if (_isSearching || _currentNavIndex == 1)
+                SearchOverlayWidget(
+                  searchController: _searchController,
+                  onSearchChanged: _onSearchChanged,
+                  isSearchingLoading: _isSearchingLoading,
+                  searchResults: _searchResults,
+                  onCancel: () {
+                    setState(() {
+                      _isSearching = false;
+                      _searchController.clear();
+                      _searchResults = [];
+                      _currentNavIndex = 0; // Return to Home
+                    });
+                  },
+                  onCitySelected: (cityMap) {
+                    final newCity = FavoriteCity(
+                      name: cityMap['name'],
+                      country: cityMap['country'],
+                      latitude: cityMap['latitude'],
+                      longitude: cityMap['longitude'],
+                    );
+                    _selectCity(newCity);
+                  },
+                ),
+
+              // Full Screen Favorites Overlay (Active when Favorites Tab is pressed)
+              if (_currentNavIndex == 2)
+                FavoritesWidget(
+                  favoriteCities: _favoriteCities,
+                  currentCity: _currentCity,
+                  onCitySelected: _selectCity,
+                  onRemoveFavorite: (cityToRemove) {
+                    setState(() {
+                      _favoriteCities.removeWhere((c) => c.name == cityToRemove.name);
+                    });
+                  },
+                  onClose: () {
+                    setState(() {
+                      _currentNavIndex = 0; // Return to Home
+                    });
+                  },
+                ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
@@ -112,7 +250,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Getting the latest weather...',
+            'Getting weather for ${_currentCity.name}...',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 16,
@@ -197,6 +335,10 @@ class _HomePageState extends State<HomePage> {
 
   /// Main Weather Dashboard Content View
   Widget _buildWeatherDashboard(WeatherModel weather) {
+    final bool isFav = _favoriteCities.any(
+      (c) => c.name.toLowerCase() == _currentCity.name.toLowerCase(),
+    );
+
     return RefreshIndicator(
       onRefresh: _loadWeather,
       color: const Color(0xFF38BDF8),
@@ -229,8 +371,21 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-            // Top Section: City Name, Weather Icon, Temperature & Mood
-            WeatherHeader(weather: weather, locationName: 'Addis Ababa'),
+            // Top Section: City Name, Favorite Heart, Weather Icon, Temperature & Mood
+            WeatherHeader(
+              weather: weather,
+              locationName: _currentCity.country.isNotEmpty
+                  ? '${_currentCity.name}, ${_currentCity.country}'
+                  : _currentCity.name,
+              isFavorite: isFav,
+              onMenuTap: () {
+                setState(() {
+                  _isSearching = true;
+                  _currentNavIndex = 1;
+                });
+              },
+              onFavoriteToggle: _toggleFavoriteCurrentCity,
+            ),
             const SizedBox(height: 24),
 
             // Live Weather Info Cards: Wind, Humidity, Feels Like, Precip
@@ -274,6 +429,13 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) {
           setState(() {
             _currentNavIndex = index;
+            if (index == 0) {
+              _isSearching = false;
+              _searchController.clear();
+              _searchResults = [];
+            } else if (index == 1) {
+              _isSearching = true;
+            }
           });
         },
         backgroundColor: Colors.transparent,
@@ -292,7 +454,7 @@ class _HomePageState extends State<HomePage> {
             label: 'Search',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_outline_rounded),
+            icon: Icon(Icons.favorite_rounded),
             label: 'Favorites',
           ),
         ],
