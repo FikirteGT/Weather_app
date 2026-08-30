@@ -6,18 +6,24 @@ import '../models/weather_model.dart';
 import '../utils/weather_utils.dart';
 
 /// WeatherHeader renders:
-/// - Navigation top bar (Menu icon, City location, Notification/Calendar icon)
+/// - Navigation top bar (Menu icon, City location with Favorite Heart icon, Calendar icon)
 /// - Weather illustration icon
 /// - Big Temperature readout
 /// - Condition title and Today's Mood tag
 class WeatherHeader extends StatelessWidget {
   final WeatherModel weather;
   final String locationName;
+  final bool isFavorite;
+  final VoidCallback? onMenuTap;
+  final VoidCallback? onFavoriteToggle;
 
   const WeatherHeader({
     super.key,
     required this.weather,
     this.locationName = 'Addis Ababa',
+    this.isFavorite = false,
+    this.onMenuTap,
+    this.onFavoriteToggle,
   });
 
   @override
@@ -32,17 +38,20 @@ class WeatherHeader extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Menu Icon
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
-                shape: BoxShape.circle,
+            // Menu Icon (opens search overlay)
+            GestureDetector(
+              onTap: onMenuTap,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.06),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.menu_rounded, color: Colors.white, size: 20),
               ),
-              child: const Icon(Icons.menu_rounded, color: Colors.white, size: 20),
             ),
 
-            // Location Header
+            // Location Header with Heart Favorite Button
             Row(
               children: [
                 const Icon(Icons.location_on_rounded, color: Color(0xFF38BDF8), size: 18),
@@ -53,6 +62,15 @@ class WeatherHeader extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: onFavoriteToggle,
+                  child: Icon(
+                    isFavorite ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                    color: isFavorite ? const Color(0xFFE57373) : Colors.white38,
+                    size: 20,
                   ),
                 ),
               ],
