@@ -44,7 +44,7 @@ class WeatherHeader extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
+                  color: Colors.white.withValues(alpha: 0.06),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.menu_rounded, color: Colors.white, size: 20),
@@ -80,7 +80,7 @@ class WeatherHeader extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
+                color: Colors.white.withValues(alpha: 0.06),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.calendar_month_outlined, color: Colors.white, size: 20),
@@ -94,9 +94,9 @@ class WeatherHeader extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFF38BDF8).withOpacity(0.12),
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
             border: Border.all(
-              color: const Color(0xFF38BDF8).withOpacity(0.3),
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -153,9 +153,9 @@ class WeatherHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
           ),
           child: Text(
             mood,

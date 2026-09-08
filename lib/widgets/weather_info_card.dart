@@ -19,10 +19,10 @@ class WeatherInfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1C33).withOpacity(0.55),
+        color: const Color(0xFF1B1C33).withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
           width: 1,
         ),
       ),
@@ -92,7 +92,7 @@ class WeatherInfoCard extends StatelessWidget {
     return Container(
       height: 36,
       width: 1,
-      color: Colors.white.withOpacity(0.08),
+      color: Colors.white.withValues(alpha: 0.08),
     );
   }
 }
