@@ -250,7 +250,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Getting weather for ${_currentCity.name}...',
+            'Getting the latest weather...',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 16,
