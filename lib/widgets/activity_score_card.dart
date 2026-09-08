@@ -21,10 +21,10 @@ class ActivityScoreCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1C33).withOpacity(0.55),
+        color: const Color(0xFF1B1C33).withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
           width: 1,
         ),
       ),
@@ -39,7 +39,7 @@ class ActivityScoreCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: scoreColor.withOpacity(0.15),
+                      color: scoreColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -62,9 +62,9 @@ class ActivityScoreCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: scoreColor.withOpacity(0.15),
+                  color: scoreColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: scoreColor.withOpacity(0.4)),
+                  border: Border.all(color: scoreColor.withValues(alpha: 0.4)),
                 ),
                 child: Text(
                   status,
@@ -110,7 +110,7 @@ class ActivityScoreCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: score / 100.0,
               minHeight: 8,
-              backgroundColor: Colors.white.withOpacity(0.08),
+              backgroundColor: Colors.white.withValues(alpha: 0.08),
               valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
             ),
           ),

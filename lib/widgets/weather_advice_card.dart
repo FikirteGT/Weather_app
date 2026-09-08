@@ -19,10 +19,10 @@ class WeatherAdviceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1C33).withOpacity(0.55),
+        color: const Color(0xFF1B1C33).withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFF38BDF8).withOpacity(0.2),
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
           width: 1.2,
         ),
       ),
@@ -35,7 +35,7 @@ class WeatherAdviceCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF38BDF8).withOpacity(0.12),
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -75,7 +75,7 @@ class WeatherAdviceCard extends StatelessWidget {
                       child: Text(
                         advice,
                         style: GoogleFonts.inter(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
                           height: 1.35,
                         ),
