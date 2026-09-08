@@ -53,13 +53,13 @@ class HourlyForecastWidget extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                 decoration: BoxDecoration(
                   color: isCurrent
-                      ? const Color(0xFF38BDF8).withOpacity(0.2)
-                      : const Color(0xFF1B1C33).withOpacity(0.55),
+                      ? const Color(0xFF38BDF8).withValues(alpha: 0.2)
+                      : const Color(0xFF1B1C33).withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isCurrent
-                        ? const Color(0xFF38BDF8).withOpacity(0.6)
-                        : Colors.white.withOpacity(0.08),
+                        ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
+                        : Colors.white.withValues(alpha: 0.08),
                     width: isCurrent ? 1.5 : 1,
                   ),
                 ),

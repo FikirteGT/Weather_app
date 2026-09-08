@@ -26,7 +26,7 @@ class SearchOverlayWidget extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
-          color: const Color(0xFF0A0914).withOpacity(0.75),
+          color: const Color(0xFF0A0914).withValues(alpha: 0.75),
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -38,10 +38,10 @@ class SearchOverlayWidget extends StatelessWidget {
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
+                        color: Colors.white.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(26),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.12),
+                          color: Colors.white.withValues(alpha: 0.12),
                           width: 1,
                         ),
                       ),
@@ -50,7 +50,7 @@ class SearchOverlayWidget extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.search_rounded,
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             size: 20,
                           ),
                           const SizedBox(width: 10),
@@ -65,7 +65,7 @@ class SearchOverlayWidget extends StatelessWidget {
                               decoration: InputDecoration(
                                 hintText: 'Search city...',
                                 hintStyle: GoogleFonts.inter(
-                                  color: Colors.white.withOpacity(0.35),
+                                  color: Colors.white.withValues(alpha: 0.35),
                                   fontSize: 15,
                                 ),
                                 border: InputBorder.none,
@@ -81,7 +81,7 @@ class SearchOverlayWidget extends StatelessWidget {
                               },
                               child: Icon(
                                 Icons.close_rounded,
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 size: 20,
                               ),
                             ),
@@ -118,7 +118,7 @@ class SearchOverlayWidget extends StatelessWidget {
                                   ? 'Type a city name to search'
                                   : 'No matching cities found',
                               style: GoogleFonts.inter(
-                                color: Colors.white.withOpacity(0.4),
+                                color: Colors.white.withValues(alpha: 0.4),
                                 fontSize: 14,
                               ),
                             ),
@@ -127,7 +127,7 @@ class SearchOverlayWidget extends StatelessWidget {
                             physics: const BouncingScrollPhysics(),
                             itemCount: searchResults.length,
                             separatorBuilder: (context, index) => Divider(
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withValues(alpha: 0.05),
                               height: 1,
                             ),
                             itemBuilder: (context, index) {
@@ -153,7 +153,7 @@ class SearchOverlayWidget extends StatelessWidget {
                                   subtitle: Text(
                                     subtitle,
                                     style: GoogleFonts.inter(
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withValues(alpha: 0.5),
                                       fontSize: 12,
                                     ),
                                   ),

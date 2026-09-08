@@ -53,7 +53,7 @@ class FavoritesWidget extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
-          color: const Color(0xFF0A0914).withOpacity(0.8),
+          color: const Color(0xFF0A0914).withValues(alpha: 0.8),
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -67,7 +67,7 @@ class FavoritesWidget extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF38BDF8).withOpacity(0.15),
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -92,7 +92,7 @@ class FavoritesWidget extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
+                        color: Colors.white.withValues(alpha: 0.06),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -137,13 +137,13 @@ class FavoritesWidget extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF38BDF8).withOpacity(0.18)
-                                      : Colors.white.withOpacity(0.05),
+                                      ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                      : Colors.white.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isSelected
-                                        ? const Color(0xFF38BDF8).withOpacity(0.6)
-                                        : Colors.white.withOpacity(0.08),
+                                        ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
+                                        : Colors.white.withValues(alpha: 0.08),
                                     width: isSelected ? 1.5 : 1,
                                   ),
                                 ),
@@ -182,7 +182,7 @@ class FavoritesWidget extends StatelessWidget {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF38BDF8).withOpacity(0.2),
+                                          color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: Text(
