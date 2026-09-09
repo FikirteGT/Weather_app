@@ -24,7 +24,8 @@ dev_dependencies: # Packages needed only during DEVELOPMENT
 
 flutter:
   uses-material-design: true
+  # Asset configuration - assets/images/ is registered for bundled illustrations
   assets:
-    - assets/image/cloudy.png
-    - assets/image/heavy-rain.png
-    - assets/image/night.png
+    - assets/images/cloudy.png
+    - assets/images/heavy-rain.png
+    - assets/images/night.png
